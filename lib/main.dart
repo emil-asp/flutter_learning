@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
@@ -9,75 +10,78 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.blue[300],
-        appBar: AppBar(
-          title: Text('App bar top', style: TextStyle(fontSize: 30, color: Colors.white),),
+        home: Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Weather',
+          style: TextStyle(fontSize: 30, color: Colors.black87),
         ),
-        body: Center(
-          child: CounterStatefulWidget(
-
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.black54),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () => {},
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => {},
           ),
-        ),
-      )
-    );
+        ],
+      ),
+      body: BodyListView(),
+    ));
   }
 }
 
-class CounterStatefulWidget extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _CounterWidgetState();
-}
-
-class _CounterWidgetState extends State<CounterStatefulWidget> {
-  int _count = 50;
-
+class BodyListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Tap "-" to decrement', style: TextStyle(color: Colors.white, fontSize: 20),),
-            ConstrainedBox(
-                constraints: BoxConstraints.tightFor(width: 120, height: 50),
-                child: Container(
-                  decoration:BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                          onPressed: () {
-                            increment(1);
-                          }, icon: Icon(Icons.add)),
-                      Text(_count.toString()),
-                      IconButton(onPressed: () {
-                        increment(-1);
-                      }, icon: Icon(Icons.remove)),
-                    ],
-                  ),
-                )
-            ),
-            Text('Tap "+" to increment', style: TextStyle(color: Colors.white, fontSize: 20),),
-          ],
-        ),
-      );
+    return _myListView();
   }
+}
 
-  void increment(int inc) {
-    setState(() {
-      _count += inc;
-      if (_count > 100) {
-        _count = 100;
-      }
-      if (_count < 0) {
-        _count = 0;
-      }
-    });
-  }
+Widget _myListView() {
+  final List<ListItem> items = List<ListItem>.generate(
+      10000,
+      (int i) => i % 6 == 0
+          ? HeadingItem('Heading ${i}')
+          : MessageItem('Sender ${i}', 'Message body $i'));
 
+  return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
 
+        if (item is HeadingItem) {
+          return ListTile(
+            title: Text(item.heading, style: Theme.of(context).textTheme.headline4,),
+          );
+        } else if (item is MessageItem) {
+          return ListTile(
+            title: Text(item.sender),
+            subtitle: Text(item.body),
+            leading: Icon(Icons.insert_photo, color: Colors.red),
+            trailing: Icon(Icons.keyboard_arrow_right, color: Colors.grey),
+          );
+        } else {
+          return ListTile();
+        }
+      });
+}
+
+abstract class ListItem {}
+
+class HeadingItem implements ListItem {
+  final String heading;
+
+  HeadingItem(this.heading);
+}
+
+class MessageItem implements ListItem {
+  final String sender;
+  final String body;
+
+  MessageItem(this.sender, this.body);
 }
