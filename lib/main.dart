@@ -10,78 +10,241 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return MaterialApp(
+        theme: new ThemeData(scaffoldBackgroundColor: Colors.red),
         home: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Weather',
-          style: TextStyle(fontSize: 30, color: Colors.black87),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.black54),
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () => {},
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () => {},
+          appBar: AppBar(
+            title: Text(
+              'Weather Forecast',
+              style: TextStyle(fontSize: 30, color: Colors.white),
+            ),
+            centerTitle: true,
+            backgroundColor: Colors.red,
           ),
+          body: BuildBody(),
+        ));
+  }
+}
+
+Widget BuildBody() {
+  return SingleChildScrollView(
+    child: Container(
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          _inputComponent(),
+          _cityDetail('Moscow, Center'),
+          _temperatureDetail(27, 'Очень солнечно'),
+          _extraWeatherDetail(),
+          Text(
+            '7-Day weather forecast'.toUpperCase(),
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          WeatherForecastListView()
         ],
       ),
-      body: BodyListView(),
-    ));
-  }
+    ),
+  );
 }
 
-class BodyListView extends StatelessWidget {
+// Form
+// City detail
+// Temerature detail
+// Extra weather detail
+// Text
+// BottomDetailView
+
+class ExtraWeatherDetailItemWidget extends StatelessWidget {
+  final IconData iconData;
+  final int value;
+  final String metric;
+
+  ExtraWeatherDetailItemWidget(this.iconData, this.value, this.metric);
+
   @override
   Widget build(BuildContext context) {
-    return _myListView();
+    return Column(
+      children: [
+        Icon(
+          this.iconData,
+          color: Colors.white,
+          size: 30,
+        ),
+        Text(
+          this.value.toString(),
+          style: TextStyle(color: Colors.white, fontSize: 30),
+        ),
+        Text(
+          this.metric,
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+      ],
+    );
   }
 }
 
-Widget _myListView() {
-  final List<ListItem> items = List<ListItem>.generate(
-      10000,
-      (int i) => i % 6 == 0
-          ? HeadingItem('Heading ${i}')
-          : MessageItem('Sender ${i}', 'Message body $i'));
-
-  return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-
-        if (item is HeadingItem) {
-          return ListTile(
-            title: Text(item.heading, style: Theme.of(context).textTheme.headline4,),
-          );
-        } else if (item is MessageItem) {
-          return ListTile(
-            title: Text(item.sender),
-            subtitle: Text(item.body),
-            leading: Icon(Icons.insert_photo, color: Colors.red),
-            trailing: Icon(Icons.keyboard_arrow_right, color: Colors.grey),
-          );
-        } else {
-          return ListTile();
-        }
-      });
+Widget _extraWeatherDetail() {
+  return Container(
+    padding: EdgeInsets.only(top: 20, bottom: 40),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 1,
+          child: ExtraWeatherDetailItemWidget(Icons.ac_unit, 5, 'km/hr'),
+        ),
+        Expanded(
+          flex: 1,
+          child: ExtraWeatherDetailItemWidget(Icons.ac_unit, 3, '%'),
+        ),
+        Expanded(
+          flex: 1,
+          child: ExtraWeatherDetailItemWidget(Icons.ac_unit, 20, '%'),
+        ),
+      ],
+    ),
+  );
 }
 
-abstract class ListItem {}
-
-class HeadingItem implements ListItem {
-  final String heading;
-
-  HeadingItem(this.heading);
+Widget _temperatureDetail(int temperature, String comment) {
+  return Container(
+      padding: EdgeInsets.only(top: 20, bottom: 20),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.wb_sunny,
+              color: Colors.white,
+              size: 80,
+            ),
+            Column(
+              children: [
+                Text(
+                  '${temperature.toString()} F',
+                  style: TextStyle(color: Colors.white, fontSize: 45),
+                ),
+                Text(
+                  comment,
+                  style: TextStyle(color: Colors.white, fontSize: 25),
+                ),
+              ],
+            )
+          ],
+        ),
+      ));
 }
 
-class MessageItem implements ListItem {
-  final String sender;
-  final String body;
+Widget _cityDetail(String city) {
+  var date = DateTime.now();
+  return Container(
+    padding: EdgeInsets.only(top: 20, bottom: 20),
+    child: Column(
+      children: [
+        Text(
+          city,
+          style: TextStyle(
+              color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          date.toString(),
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+      ],
+    ),
+  );
+}
 
-  MessageItem(this.sender, this.body);
+class _inputComponent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: 10),
+          child: Icon(
+            Icons.search,
+            color: Colors.white,
+          ),
+        ),
+        Expanded(
+            child: TextField(
+          onChanged: (String) => {print('Text change')},
+          decoration: InputDecoration(
+              hintText: 'Enter city name',
+              hintStyle: TextStyle(color: Colors.white)),
+        ))
+      ],
+    );
+  }
+}
+
+Widget listViewItem(WeatherForecastDayItem item) {
+  return Container(
+    color: Colors.white30,
+    margin: EdgeInsets.only(right: 10),
+    width: 160,
+    child: Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 10, top: 20),
+          child: Text(
+            item.day,
+            style: TextStyle(color: Colors.white, fontSize: 22),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Text('${item.temperature.toString()} F',
+                  style: TextStyle(color: Colors.white, fontSize: 30)),
+            ),
+            Icon(
+              item.iconData,
+              color: Colors.white,
+              size: 40,
+            )
+          ],
+        )
+      ],
+    ),
+  );
+}
+
+class WeatherForecastDayItem {
+  final String day;
+  final int temperature;
+  final IconData iconData;
+
+  WeatherForecastDayItem(this.day, this.temperature, this.iconData);
+}
+
+class WeatherForecastListView extends StatelessWidget {
+  final List<WeatherForecastDayItem> items = [
+    new WeatherForecastDayItem('Понедельник', 32, Icons.wb_sunny),
+    new WeatherForecastDayItem('Вторник', 30, Icons.wb_sunny),
+    new WeatherForecastDayItem('Среда', 27, Icons.wb_sunny),
+    new WeatherForecastDayItem('Четверг', 30, Icons.wb_sunny),
+    new WeatherForecastDayItem('Пятница', 29, Icons.wb_sunny),
+    new WeatherForecastDayItem('Суббота', 28, Icons.wb_sunny),
+    new WeatherForecastDayItem('Воскресенье', 31, Icons.wb_sunny),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 15),
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          WeatherForecastDayItem item = items[index];
+          return listViewItem(item);
+        },
+      ),
+    );
+  }
 }
